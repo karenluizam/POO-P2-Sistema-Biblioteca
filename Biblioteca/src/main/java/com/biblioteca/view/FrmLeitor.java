@@ -33,7 +33,7 @@ public class FrmLeitor extends JFrame {
         txtTelefone = EstiloUI.criarCampoTexto();
         txtMatricula = EstiloUI.criarCampoTexto();
 
-        form.add(EstiloUI.criarLabel("ID (informe para Consultar/Alterar/Excluir):"));
+        form.add(EstiloUI.criarLabel("ID (para Consultar/Alterar/Excluir):"));
         form.add(txtId);
         form.add(EstiloUI.criarLabel("Nome Completo:"));
         form.add(txtNome);

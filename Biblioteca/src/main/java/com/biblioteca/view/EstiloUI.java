@@ -69,6 +69,6 @@ public class EstiloUI {
         tabela.setSelectionForeground(COR_TEXTO);
         tabela.getTableHeader().setFont(FONTE_LABEL);
         tabela.getTableHeader().setBackground(COR_PRIMARIA);
-        tabela.getTableHeader().setForeground(Color.WHITE);
+        tabela.getTableHeader().setForeground(COR_PRIMARIA);
     }
 }

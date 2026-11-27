@@ -144,9 +144,35 @@ public class FrmEmprestimo extends JFrame {
 
             Emprestimo emp = new Emprestimo(null, solicitante, func, copia, dtEmp, dtPrev);
             if (dao.inserir(emp) > 0) {
-                JOptionPane.showMessageDialog(this, "Empréstimo registrado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                limpar();
+                int continuar = JOptionPane.showConfirmDialog(this,
+                        "Empréstimo registrado com sucesso!\nDeseja registrar outro livro para " + solicitante.getNome() + "?",
+                        "Sucesso", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+                // Recarrega os combos para atualizar o status da cópia recém-emprestada
                 carregarCombos();
+
+                if (continuar == JOptionPane.YES_OPTION) {
+                    // Restaura Solicitante, Funcionário e Datas, deixando apenas a Cópia em branco
+                    for (int i = 0; i < cbSolicitante.getItemCount(); i++) {
+                        Pessoa p = cbSolicitante.getItemAt(i);
+                        if (p.getId().equals(solicitante.getId()) && p.getClass().equals(solicitante.getClass())) {
+                            cbSolicitante.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+                    for (int i = 0; i < cbFuncionario.getItemCount(); i++) {
+                        if (cbFuncionario.getItemAt(i).getId().equals(func.getId())) {
+                            cbFuncionario.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+                    txtDataEmp.setText(dtEmp.toString());
+                    txtDataPrevista.setText(dtPrev.toString());
+                    cbCopia.setSelectedIndex(-1);
+                    cbCopia.requestFocus();
+                } else {
+                    limpar();
+                }
             }
         } catch (DateTimeParseException ex) {
             JOptionPane.showMessageDialog(this, "Data inválida! Use o formato AAAA-MM-DD (ex.: 2026-11-25).", "Erro de Data", JOptionPane.ERROR_MESSAGE);
