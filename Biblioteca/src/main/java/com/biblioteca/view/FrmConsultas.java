@@ -5,6 +5,8 @@ import com.biblioteca.model.*;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class FrmConsultas extends JFrame {
     private JTabbedPane abas;
@@ -16,12 +18,14 @@ public class FrmConsultas extends JFrame {
     private final CopiaDAO copiaDAO = new CopiaDAO();
     private final EmprestimoDAO empDAO = new EmprestimoDAO();
     private final ReservaDAO resDAO = new ReservaDAO();
+    private final FrmPrincipal principal;
 
-    public FrmConsultas() {
-        this(0);
+    public FrmConsultas(FrmPrincipal principal) {
+        this(principal, 0);
     }
 
-    public FrmConsultas(int abaInicial) {
+    public FrmConsultas(FrmPrincipal principal, int abaInicial) {
+        this.principal = principal;
         setTitle("Consultas Gerais do Sistema");
         setSize(960, 520);
         setLocationRelativeTo(null);
@@ -29,7 +33,7 @@ public class FrmConsultas extends JFrame {
         setLayout(new BorderLayout());
         getContentPane().setBackground(EstiloUI.COR_FUNDO);
 
-        add(EstiloUI.criarCabecalho("Consultas Gerais", "Visualização completa dos registros armazenados no SQLite"), BorderLayout.NORTH);
+        add(EstiloUI.criarCabecalho("Consultas Gerais", "Dê um duplo clique em qualquer linha para abrir e editar o registro"), BorderLayout.NORTH);
 
         abas = new JTabbedPane();
         abas.setFont(EstiloUI.FONTE_LABEL);
@@ -38,15 +42,15 @@ public class FrmConsultas extends JFrame {
         modFuncionarios = criarModelo(new String[]{"ID", "Nome", "CPF", "Turno", "Cargo", "Salário (R$)"});
         modObras        = criarModelo(new String[]{"ID", "Título", "Autor", "Editora", "Ano", "ISBN"});
         modCopias       = criarModelo(new String[]{"ID", "Obra", "Código Tombo", "Situação"});
-        modEmprestimos  = criarModelo(new String[]{"ID", "Leitor", "Funcionário", "Cópia (Tombo)", "Empréstimo", "Prevista", "Devolução"});
-        modReservas     = criarModelo(new String[]{"ID", "Leitor", "Obra", "Data Reserva", "Status"});
+        modEmprestimos  = criarModelo(new String[]{"ID", "Solicitante", "Funcionário", "Cópia (Tombo)", "Empréstimo", "Prevista", "Devolução"});
+        modReservas     = criarModelo(new String[]{"ID", "Solicitante", "Obra", "Data Reserva", "Status"});
 
-        abas.addTab("Leitores", criarPainelTabela(modLeitores));
-        abas.addTab("Funcionários", criarPainelTabela(modFuncionarios));
-        abas.addTab("Obras", criarPainelTabela(modObras));
-        abas.addTab("Cópias", criarPainelTabela(modCopias));
-        abas.addTab("Empréstimos", criarPainelTabela(modEmprestimos));
-        abas.addTab("Reservas", criarPainelTabela(modReservas));
+        abas.addTab("Leitores", criarPainelTabela(modLeitores, 0));
+        abas.addTab("Funcionários", criarPainelTabela(modFuncionarios, 1));
+        abas.addTab("Obras", criarPainelTabela(modObras, 2));
+        abas.addTab("Cópias", criarPainelTabela(modCopias, 3));
+        abas.addTab("Empréstimos", criarPainelTabela(modEmprestimos, 4));
+        abas.addTab("Reservas", criarPainelTabela(modReservas, 5));
 
         add(abas, BorderLayout.CENTER);
 
@@ -72,10 +76,56 @@ public class FrmConsultas extends JFrame {
         };
     }
 
-    private JScrollPane criarPainelTabela(DefaultTableModel modelo) {
+    private JScrollPane criarPainelTabela(DefaultTableModel modelo, int tipoTabela) {
         JTable tabela = new JTable(modelo);
         EstiloUI.estilizarTabela(tabela);
+
+        tabela.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 && tabela.getSelectedRow() != -1) {
+                    int linha = tabela.getSelectedRow();
+                    int id = Integer.parseInt(tabela.getValueAt(linha, 0).toString());
+                    abrirTelaEdicao(tipoTabela, id);
+                }
+            }
+        });
         return new JScrollPane(tabela);
+    }
+
+    private void abrirTelaEdicao(int tipoTabela, int id) {
+        switch (tipoTabela) {
+            case 0 -> principal.abrirTelaUnica(() -> {
+                FrmLeitor frm = new FrmLeitor(principal);
+                frm.carregarPorId(id);
+                return frm;
+            });
+            case 1 -> principal.abrirTelaUnica(() -> {
+                FrmFuncionario frm = new FrmFuncionario(principal);
+                frm.carregarPorId(id);
+                return frm;
+            });
+            case 2 -> principal.abrirTelaUnica(() -> {
+                FrmObra frm = new FrmObra(principal);
+                frm.carregarPorId(id);
+                return frm;
+            });
+            case 3 -> principal.abrirTelaUnica(() -> {
+                FrmCopia frm = new FrmCopia(principal);
+                frm.carregarPorId(id);
+                return frm;
+            });
+            case 4 -> principal.abrirTelaUnica(() -> {
+                FrmEmprestimo frm = new FrmEmprestimo(principal);
+                frm.carregarPorId(id);
+                return frm;
+            });
+            case 5 -> principal.abrirTelaUnica(() -> {
+                FrmReserva frm = new FrmReserva(principal);
+                frm.carregarPorId(id);
+                return frm;
+            });
+        }
     }
 
     private void carregarTudo() {
@@ -105,7 +155,7 @@ public class FrmConsultas extends JFrame {
                 String dev = (emp.getDataDevolucaoReal() != null) ? emp.getDataDevolucaoReal().toString() : "Em aberto";
                 modEmprestimos.addRow(new Object[]{
                         emp.getId(),
-                        emp.getLeitor().getNome(),
+                        emp.getSolicitante().getNome() + (emp.getSolicitante() instanceof Funcionario ? " [Func.]" : " [Solicitante]"),
                         emp.getFuncionario().getNome(),
                         emp.getCopia().getCodigoTombo() + " (" + emp.getCopia().getObra().getTitulo() + ")",
                         emp.getDataEmprestimo(),
@@ -118,7 +168,7 @@ public class FrmConsultas extends JFrame {
             for (Reserva r : resDAO.listar()) {
                 modReservas.addRow(new Object[]{
                         r.getId(),
-                        r.getLeitor().getNome(),
+                        r.getSolicitante().getNome() + (r.getSolicitante() instanceof Funcionario ? " [Func.]" : " [Leitor]"),
                         r.getObra().getTitulo(),
                         r.getDataReserva(),
                         r.isAtiva() ? "Ativa" : "Concluída/Cancelada"

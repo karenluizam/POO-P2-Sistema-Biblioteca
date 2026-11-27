@@ -66,7 +66,9 @@ public class CopiaDAO {
 
     public List<Copia> listar() throws Exception {
         List<Copia> lista = new ArrayList<>();
-        String sql = "SELECT * FROM copia ORDER BY id";
+        String sql = "SELECT c.* FROM copia c "
+                + "INNER JOIN obra o ON c.id_obra = o.id "
+                + "ORDER BY o.titulo ASC, c.codigo_tombo ASC";
         try (Connection conn = ConexaoSQLite.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {

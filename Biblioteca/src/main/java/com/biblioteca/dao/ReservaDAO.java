@@ -1,6 +1,8 @@
 package com.biblioteca.dao;
 
 import com.biblioteca.model.Reserva;
+import com.biblioteca.model.Funcionario;
+import com.biblioteca.model.Pessoa;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,28 +13,40 @@ import java.util.List;
 public class ReservaDAO {
     private final LeitorDAO leitorDAO = new LeitorDAO();
     private final ObraDAO obraDAO = new ObraDAO();
+    private final FuncionarioDAO funcionarioDAO = new FuncionarioDAO();
+
+    private Pessoa carregarPessoa(int idPessoa, String tipoPessoa) throws Exception {
+        if ("FUNCIONARIO".equals(tipoPessoa)) {
+            return funcionarioDAO.carregar(idPessoa);
+        }
+        return leitorDAO.carregar(idPessoa);
+    }
 
     public int inserir(Reserva obj) throws Exception {
-        String sql = "INSERT INTO reserva(id_leitor, id_obra, data_reserva, ativa) VALUES(?, ?, ?, ?)";
+        String tipoPessoa = (obj.getSolicitante() instanceof Funcionario) ? "FUNCIONARIO" : "LEITOR";
+        String sql = "INSERT INTO reserva(id_pessoa, tipo_pessoa, id_obra, data_reserva, ativa) VALUES(?, ?, ?, ?, ?)";
         try (Connection conn = ConexaoSQLite.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, obj.getLeitor().getId());
-            pstmt.setInt(2, obj.getObra().getId());
-            pstmt.setString(3, obj.getDataReserva().toString());
-            pstmt.setInt(4, obj.isAtiva() ? 1 : 0);
+            pstmt.setInt(1, obj.getSolicitante().getId());
+            pstmt.setString(2, tipoPessoa);
+            pstmt.setInt(3, obj.getObra().getId());
+            pstmt.setString(4, obj.getDataReserva().toString());
+            pstmt.setInt(5, obj.isAtiva() ? 1 : 0);
             return pstmt.executeUpdate();
         }
     }
 
     public int alterar(Reserva obj) throws Exception {
-        String sql = "UPDATE reserva SET id_leitor=?, id_obra=?, data_reserva=?, ativa=? WHERE id=?";
+        String tipoPessoa = (obj.getSolicitante() instanceof Funcionario) ? "FUNCIONARIO" : "LEITOR";
+        String sql = "UPDATE reserva SET id_pessoa=?, tipo_pessoa=?, id_obra=?, data_reserva=?, ativa=? WHERE id=?";
         try (Connection conn = ConexaoSQLite.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, obj.getLeitor().getId());
-            pstmt.setInt(2, obj.getObra().getId());
-            pstmt.setString(3, obj.getDataReserva().toString());
-            pstmt.setInt(4, obj.isAtiva() ? 1 : 0);
-            pstmt.setInt(5, obj.getId());
+            pstmt.setInt(1, obj.getSolicitante().getId());
+            pstmt.setString(2, tipoPessoa);
+            pstmt.setInt(3, obj.getObra().getId());
+            pstmt.setString(4, obj.getDataReserva().toString());
+            pstmt.setInt(5, obj.isAtiva() ? 1 : 0);
+            pstmt.setInt(6, obj.getId());
             return pstmt.executeUpdate();
         }
     }
@@ -55,7 +69,7 @@ public class ReservaDAO {
                 if (rs.next()) {
                     Reserva obj = new Reserva();
                     obj.setId(rs.getInt("id"));
-                    obj.setLeitor(leitorDAO.carregar(rs.getInt("id_leitor")));
+                    obj.setSolicitante(carregarPessoa(rs.getInt("id_pessoa"), rs.getString("tipo_pessoa")));
                     obj.setObra(obraDAO.carregar(rs.getInt("id_obra")));
                     obj.setDataReserva(LocalDate.parse(rs.getString("data_reserva")));
                     obj.setAtiva(rs.getInt("ativa") == 1);
@@ -75,7 +89,7 @@ public class ReservaDAO {
             while (rs.next()) {
                 Reserva obj = new Reserva();
                 obj.setId(rs.getInt("id"));
-                obj.setLeitor(leitorDAO.carregar(rs.getInt("id_leitor")));
+                obj.setSolicitante(carregarPessoa(rs.getInt("id_pessoa"), rs.getString("tipo_pessoa")));
                 obj.setObra(obraDAO.carregar(rs.getInt("id_obra")));
                 obj.setDataReserva(LocalDate.parse(rs.getString("data_reserva")));
                 obj.setAtiva(rs.getInt("ativa") == 1);

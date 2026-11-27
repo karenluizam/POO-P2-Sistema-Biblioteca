@@ -8,6 +8,7 @@ import com.biblioteca.model.Copia;
 import com.biblioteca.model.Emprestimo;
 import com.biblioteca.model.Funcionario;
 import com.biblioteca.model.Leitor;
+import com.biblioteca.model.Pessoa;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -16,7 +17,7 @@ import javax.swing.border.EmptyBorder;
 
 public class FrmEmprestimo extends JFrame {
     private JTextField txtId, txtDataEmp, txtDataPrevista, txtDataDevolucao;
-    private JComboBox<Leitor> cbLeitor;
+    private JComboBox<Pessoa> cbSolicitante;
     private JComboBox<Funcionario> cbFuncionario;
     private JComboBox<Copia> cbCopia;
 
@@ -42,7 +43,7 @@ public class FrmEmprestimo extends JFrame {
         form.setBorder(new EmptyBorder(15, 22, 10, 22));
 
         txtId = EstiloUI.criarCampoTexto();
-        cbLeitor = new JComboBox<>();
+        cbSolicitante = new JComboBox<>();
         cbFuncionario = new JComboBox<>();
         cbCopia = new JComboBox<>();
         txtDataEmp = EstiloUI.criarCampoTexto();
@@ -52,8 +53,8 @@ public class FrmEmprestimo extends JFrame {
 
         form.add(EstiloUI.criarLabel("ID do Empréstimo:"));
         form.add(txtId);
-        form.add(EstiloUI.criarLabel("Leitor:"));
-        form.add(cbLeitor);
+        form.add(EstiloUI.criarLabel("Solicitante:"));
+        form.add(cbSolicitante);
         form.add(EstiloUI.criarLabel("Funcionário Responsável:"));
         form.add(cbFuncionario);
         form.add(EstiloUI.criarLabel("Cópia (Exemplar):"));
@@ -82,7 +83,7 @@ public class FrmEmprestimo extends JFrame {
         btnDevolver.addActionListener(e -> devolver());
         btnExcluir.addActionListener(e -> excluir());
         btnLimpar.addActionListener(e -> limpar());
-        btnListar.addActionListener(e -> principal.abrirTelaUnica(() -> new FrmConsultas(4)));
+        btnListar.addActionListener(e -> principal.abrirTelaUnica(() -> new FrmConsultas(principal, 4)));
 
         botoes.add(btnConsultar);
         botoes.add(btnEmprestar);
@@ -96,6 +97,11 @@ public class FrmEmprestimo extends JFrame {
         preencherDatasPadrao();
     }
 
+    public void carregarPorId(int id) {
+        txtId.setText(String.valueOf(id));
+        consultar();
+    }
+
     private void preencherDatasPadrao() {
         LocalDate hoje = LocalDate.now();
         txtDataEmp.setText(hoje.toString());
@@ -106,28 +112,37 @@ public class FrmEmprestimo extends JFrame {
 
     private void carregarCombos() {
         try {
-            cbLeitor.removeAllItems();
-            for (Leitor l : leitorDAO.listar()) cbLeitor.addItem(l);
+            cbSolicitante.removeAllItems();
+            for (Leitor l : leitorDAO.listar()) cbSolicitante.addItem(l);
+            for (Funcionario f : funcDAO.listar()) cbSolicitante.addItem(f);
 
             cbFuncionario.removeAllItems();
             for (Funcionario f : funcDAO.listar()) cbFuncionario.addItem(f);
 
             cbCopia.removeAllItems();
             for (Copia c : copiaDAO.listar()) cbCopia.addItem(c);
+
+            limparSelecoes();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Erro ao carregar listas: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    private void limparSelecoes() {
+        cbSolicitante.setSelectedIndex(-1);
+        cbFuncionario.setSelectedIndex(-1);
+        cbCopia.setSelectedIndex(-1);
+    }
+
     private void inserir() {
         try {
-            Leitor leitor = (Leitor) cbLeitor.getSelectedItem();
+            Pessoa solicitante = (Pessoa) cbSolicitante.getSelectedItem();
             Funcionario func = (Funcionario) cbFuncionario.getSelectedItem();
             Copia copia = (Copia) cbCopia.getSelectedItem();
             LocalDate dtEmp = LocalDate.parse(txtDataEmp.getText().trim());
             LocalDate dtPrev = LocalDate.parse(txtDataPrevista.getText().trim());
 
-            Emprestimo emp = new Emprestimo(null, leitor, func, copia, dtEmp, dtPrev);
+            Emprestimo emp = new Emprestimo(null, solicitante, func, copia, dtEmp, dtPrev);
             if (dao.inserir(emp) > 0) {
                 JOptionPane.showMessageDialog(this, "Empréstimo registrado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
                 limpar();
@@ -152,8 +167,11 @@ public class FrmEmprestimo extends JFrame {
                 JOptionPane.showMessageDialog(this, "Empréstimo não encontrado.", "Consulta", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            for (int i = 0; i < cbLeitor.getItemCount(); i++) {
-                if (cbLeitor.getItemAt(i).getId().equals(emp.getLeitor().getId())) cbLeitor.setSelectedIndex(i);
+            for (int i = 0; i < cbSolicitante.getItemCount(); i++) {
+                Pessoa p = cbSolicitante.getItemAt(i);
+                if (p.getId().equals(emp.getSolicitante().getId()) && p.getClass().equals(emp.getSolicitante().getClass())) {
+                    cbSolicitante.setSelectedIndex(i);
+                }
             }
             for (int i = 0; i < cbFuncionario.getItemCount(); i++) {
                 if (cbFuncionario.getItemAt(i).getId().equals(emp.getFuncionario().getId())) cbFuncionario.setSelectedIndex(i);
@@ -221,9 +239,11 @@ public class FrmEmprestimo extends JFrame {
         }
     }
 
+
     private void limpar() {
         txtId.setText("");
         txtDataDevolucao.setText("");
+        limparSelecoes();
         preencherDatasPadrao();
         txtId.requestFocus();
     }

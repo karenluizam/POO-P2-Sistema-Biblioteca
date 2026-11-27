@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 public class Reserva {
     private Integer id;
-    private Leitor leitor; // Associação
+    private Pessoa solicitante; // Associação polimósfica
     private Obra obra;     // Associação
     private LocalDate dataReserva;
     private boolean ativa;
@@ -14,9 +14,9 @@ public class Reserva {
         this.ativa = true;
     }
 
-    public Reserva(Integer id, Leitor leitor, Obra obra, LocalDate dataReserva, boolean ativa) throws ValidacaoException {
+    public Reserva(Integer id, Pessoa solicitante, Obra obra, LocalDate dataReserva, boolean ativa) throws ValidacaoException {
         setId(id);
-        setLeitor(leitor);
+        setSolicitante(solicitante);
         setObra(obra);
         setDataReserva(dataReserva);
         setAtiva(ativa);
@@ -30,15 +30,15 @@ public class Reserva {
         this.id = id;
     }
 
-    public Leitor getLeitor() {
-        return leitor;
+    public Pessoa getSolicitante() {
+        return solicitante;
     }
 
-    public void setLeitor(Leitor leitor) throws ValidacaoException {
-        if (leitor == null) {
-            throw new ValidacaoException("Selecione um leitor para a reserva.");
+    public void setSolicitante(Pessoa solicitante) throws ValidacaoException {
+        if (solicitante == null) {
+            throw new ValidacaoException("Selecione quem está fazendo a reserva (Leitor ou Funcionário).");
         }
-        this.leitor = leitor;
+        this.solicitante = solicitante;
     }
 
     public Obra getObra() {

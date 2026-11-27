@@ -63,7 +63,7 @@ public class FrmLeitor extends JFrame {
         btnAlterar.addActionListener(e -> alterar());
         btnExcluir.addActionListener(e -> excluir());
         btnLimpar.addActionListener(e -> limpar());
-        btnListar.addActionListener(e -> principal.abrirTelaUnica(() -> new FrmConsultas(0)));
+        btnListar.addActionListener(e -> principal.abrirTelaUnica(() -> new FrmConsultas(principal, 0)));
 
         botoes.add(btnConsultar);
         botoes.add(btnInserir);
@@ -72,6 +72,11 @@ public class FrmLeitor extends JFrame {
         botoes.add(btnLimpar);
         botoes.add(btnListar);
         add(botoes, BorderLayout.SOUTH);
+    }
+
+    public void carregarPorId(int id) {
+        txtId.setText(String.valueOf(id));
+        consultar();
     }
 
     private void inserir() {
@@ -157,6 +162,7 @@ public class FrmLeitor extends JFrame {
                     "Erro ao Excluir", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     private void limpar() {
         txtId.setText("");

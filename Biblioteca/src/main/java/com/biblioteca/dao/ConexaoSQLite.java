@@ -61,24 +61,24 @@ public class ConexaoSQLite {
 
         String sqlEmprestimo = "CREATE TABLE IF NOT EXISTS emprestimo ("
                 + " id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + " id_leitor INTEGER NOT NULL,"
+                + " id_pessoa INTEGER NOT NULL,"
+                + " tipo_pessoa TEXT NOT NULL,"
                 + " id_funcionario INTEGER NOT NULL,"
                 + " id_copia INTEGER NOT NULL,"
                 + " data_emprestimo TEXT NOT NULL,"
                 + " data_prevista TEXT NOT NULL,"
                 + " data_devolucao TEXT,"
-                + " FOREIGN KEY (id_leitor) REFERENCES leitor(id),"
                 + " FOREIGN KEY (id_funcionario) REFERENCES funcionario(id),"
                 + " FOREIGN KEY (id_copia) REFERENCES copia(id)"
                 + ");";
 
         String sqlReserva = "CREATE TABLE IF NOT EXISTS reserva ("
                 + " id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + " id_leitor INTEGER NOT NULL,"
+                + " id_pessoa INTEGER NOT NULL,"
+                + " tipo_pessoa TEXT NOT NULL,"
                 + " id_obra INTEGER NOT NULL,"
                 + " data_reserva TEXT NOT NULL,"
                 + " ativa INTEGER NOT NULL,"
-                + " FOREIGN KEY (id_leitor) REFERENCES leitor(id),"
                 + " FOREIGN KEY (id_obra) REFERENCES obra(id)"
                 + ");";
 

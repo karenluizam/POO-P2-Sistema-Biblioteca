@@ -63,7 +63,7 @@ public class FrmCopia extends JFrame {
         btnAlterar.addActionListener(e -> alterar());
         btnExcluir.addActionListener(e -> excluir());
         btnLimpar.addActionListener(e -> limpar());
-        btnListar.addActionListener(e -> principal.abrirTelaUnica(() -> new FrmConsultas(3)));
+        btnListar.addActionListener(e -> principal.abrirTelaUnica(() -> new FrmConsultas(principal, 3)));
 
         botoes.add(btnConsultar);
         botoes.add(btnInserir);
@@ -74,6 +74,11 @@ public class FrmCopia extends JFrame {
         add(botoes, BorderLayout.SOUTH);
 
         carregarObras();
+    }
+
+    public void carregarPorId(int id) {
+        txtId.setText(String.valueOf(id));
+        consultar();
     }
 
     private void carregarObras() {
@@ -178,6 +183,7 @@ public class FrmCopia extends JFrame {
             JOptionPane.showMessageDialog(this, "Não foi possível excluir: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     private void limpar() {
         txtId.setText("");

@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 public class Emprestimo {
     private Integer id;
-    private Leitor leitor;           // Associação
+    private Pessoa solicitante; // Associação polimórfica (aceita Leitor ou Funcionario)
     private Funcionario funcionario; // Associação
     private Copia copia;             // Associação
     private LocalDate dataEmprestimo;
@@ -15,14 +15,25 @@ public class Emprestimo {
     public Emprestimo() {
     }
 
-    public Emprestimo(Integer id, Leitor leitor, Funcionario funcionario, Copia copia,
+    public Emprestimo(Integer id, Pessoa solicitante, Funcionario funcionario, Copia copia,
                       LocalDate dataEmprestimo, LocalDate dataPrevistaDevolucao) throws ValidacaoException {
         setId(id);
-        setLeitor(leitor);
+        setSolicitante(solicitante);
         setFuncionario(funcionario);
         setCopia(copia);
         setDataEmprestimo(dataEmprestimo);
         setDataPrevistaDevolucao(dataPrevistaDevolucao);
+    }
+
+    public Pessoa getSolicitante() {
+        return solicitante;
+    }
+
+    public void setSolicitante(Pessoa solicitante) throws ValidacaoException {
+        if (solicitante == null) {
+            throw new ValidacaoException("Selecione quem está pegando o livro (Leitor ou Funcionário).");
+        }
+        this.solicitante = solicitante;
     }
 
     public boolean isDevolvido() {
@@ -37,16 +48,6 @@ public class Emprestimo {
         this.id = id;
     }
 
-    public Leitor getLeitor() {
-        return leitor;
-    }
-
-    public void setLeitor(Leitor leitor) throws ValidacaoException {
-        if (leitor == null) {
-            throw new ValidacaoException("Selecione um leitor para o empréstimo.");
-        }
-        this.leitor = leitor;
-    }
 
     public Funcionario getFuncionario() {
         return funcionario;

@@ -12,7 +12,7 @@ public class FrmPrincipal extends JFrame {
     private JFrame janelaAtual; // Guarda a única tela aberta no momento
 
     public FrmPrincipal() {
-        setTitle("Sistema de Gestão de Biblioteca");
+        setTitle("Sistema de Gestão - Biblioteca da Mari");
         setSize(950, 620);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -66,8 +66,8 @@ public class FrmPrincipal extends JFrame {
 
         // Menu Consultas
         JMenu menuConsultas = new JMenu("Consultas");
-        JMenuItem miConsultaGeral = new JMenuItem("Consultar Tabelas do Acervo e Cadastros");
-        miConsultaGeral.addActionListener(e -> abrirTelaUnica(FrmConsultas::new));
+        JMenuItem miConsultaGeral = new JMenuItem("Consultar Tabelas do Acervo Pessoal e Cadastros");
+        miConsultaGeral.addActionListener(e -> abrirTelaUnica(() -> new FrmConsultas(this)));
         menuConsultas.add(miConsultaGeral);
 
         // Menu Sistema
@@ -94,14 +94,14 @@ public class FrmPrincipal extends JFrame {
         fundo.setBackground(EstiloUI.COR_FUNDO);
 
         fundo.add(EstiloUI.criarCabecalho(
-                "Sistema de Controle de Biblioteca",
+                "Controle da Biblioteca da Mari",
                 "Gerenciamento integrado de Leitores, Funcionários, Acervo, Empréstimos e Reservas"
         ), BorderLayout.NORTH);
 
         JPanel centro = new JPanel(new GridBagLayout());
         centro.setBackground(EstiloUI.COR_FUNDO);
 
-        JPanel card = new JPanel(new GridLayout(3, 2, 16, 16));
+        JPanel card = new JPanel(new GridLayout(4, 2, 16, 14));
         card.setBackground(EstiloUI.COR_CARD);
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(220, 225, 230)),
@@ -113,14 +113,16 @@ public class FrmPrincipal extends JFrame {
         JButton btnObras = EstiloUI.criarBotao("Gerenciar Obras", EstiloUI.COR_PRIMARIA);
         JButton btnCopias = EstiloUI.criarBotao("Gerenciar Cópias", EstiloUI.COR_PRIMARIA);
         JButton btnEmprestimos = EstiloUI.criarBotao("Empréstimos / Devoluções", EstiloUI.COR_SUCESSO);
+        JButton btnReservas = EstiloUI.criarBotao("Gerenciar Reservas", EstiloUI.COR_SUCESSO);
         JButton btnConsultas = EstiloUI.criarBotao("Consultar Tabelas", EstiloUI.COR_NEUTRA);
 
+        btnReservas.addActionListener(e -> abrirTelaUnica(() -> new FrmReserva(this)));
         btnLeitores.addActionListener(e -> abrirTelaUnica(() -> new FrmLeitor(this)));
         btnFuncionarios.addActionListener(e -> abrirTelaUnica(() -> new FrmFuncionario(this)));
         btnObras.addActionListener(e -> abrirTelaUnica(() -> new FrmObra(this)));
         btnCopias.addActionListener(e -> abrirTelaUnica(() -> new FrmCopia(this)));
         btnEmprestimos.addActionListener(e -> abrirTelaUnica(() -> new FrmEmprestimo(this)));
-        btnConsultas.addActionListener(e -> abrirTelaUnica(FrmConsultas::new));
+        btnConsultas.addActionListener(e -> abrirTelaUnica(() -> new FrmConsultas(this)));
 
         card.add(btnLeitores);
         card.add(btnFuncionarios);
@@ -128,6 +130,7 @@ public class FrmPrincipal extends JFrame {
         card.add(btnCopias);
         card.add(btnEmprestimos);
         card.add(btnConsultas);
+        card.add(btnReservas);
 
         centro.add(card);
         fundo.add(centro, BorderLayout.CENTER);

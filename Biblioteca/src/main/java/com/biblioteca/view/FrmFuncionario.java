@@ -70,7 +70,7 @@ public class FrmFuncionario extends JFrame {
         btnAlterar.addActionListener(e -> alterar());
         btnExcluir.addActionListener(e -> excluir());
         btnLimpar.addActionListener(e -> limpar());
-        btnListar.addActionListener(e -> principal.abrirTelaUnica(() -> new FrmConsultas(1)));
+        btnListar.addActionListener(e -> principal.abrirTelaUnica(() -> new FrmConsultas(principal, 1)));
 
         botoes.add(btnConsultar);
         botoes.add(btnInserir);
@@ -79,6 +79,11 @@ public class FrmFuncionario extends JFrame {
         botoes.add(btnLimpar);
         botoes.add(btnListar);
         add(botoes, BorderLayout.SOUTH);
+    }
+
+    public void carregarPorId(int id) {
+        txtId.setText(String.valueOf(id));
+        consultar();
     }
 
     private char getTurnoSelecionado() {
@@ -175,6 +180,7 @@ public class FrmFuncionario extends JFrame {
             JOptionPane.showMessageDialog(this, "Não foi possível excluir: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     private void limpar() {
         txtId.setText("");

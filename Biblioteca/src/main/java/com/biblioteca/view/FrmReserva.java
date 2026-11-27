@@ -1,5 +1,8 @@
 package com.biblioteca.view;
 
+import com.biblioteca.dao.FuncionarioDAO;
+import com.biblioteca.model.Funcionario;
+import com.biblioteca.model.Pessoa;
 import com.biblioteca.dao.LeitorDAO;
 import com.biblioteca.dao.ObraDAO;
 import com.biblioteca.dao.ReservaDAO;
@@ -14,7 +17,8 @@ import javax.swing.border.EmptyBorder;
 
 public class FrmReserva extends JFrame {
     private JTextField txtId, txtDataReserva;
-    private JComboBox<Leitor> cbLeitor;
+    private JComboBox<Pessoa> cbSolicitante;
+    private final FuncionarioDAO funcDAO = new FuncionarioDAO();
     private JComboBox<Obra> cbObra;
     private JCheckBox chkAtiva;
 
@@ -39,7 +43,7 @@ public class FrmReserva extends JFrame {
         form.setBorder(new EmptyBorder(18, 22, 10, 22));
 
         txtId = EstiloUI.criarCampoTexto();
-        cbLeitor = new JComboBox<>();
+        cbSolicitante = new JComboBox<>();
         cbObra = new JComboBox<>();
         txtDataReserva = EstiloUI.criarCampoTexto();
         txtDataReserva.setText(LocalDate.now().toString());
@@ -50,7 +54,7 @@ public class FrmReserva extends JFrame {
         form.add(EstiloUI.criarLabel("ID da Reserva:"));
         form.add(txtId);
         form.add(EstiloUI.criarLabel("Leitor:"));
-        form.add(cbLeitor);
+        form.add(cbSolicitante);
         form.add(EstiloUI.criarLabel("Obra Desejada:"));
         form.add(cbObra);
         form.add(EstiloUI.criarLabel("Data da Reserva (AAAA-MM-DD):"));
@@ -75,7 +79,7 @@ public class FrmReserva extends JFrame {
         btnAlterar.addActionListener(e -> alterar());
         btnExcluir.addActionListener(e -> excluir());
         btnLimpar.addActionListener(e -> limpar());
-        btnListar.addActionListener(e -> principal.abrirTelaUnica(() -> new FrmConsultas(5)));
+        btnListar.addActionListener(e -> principal.abrirTelaUnica(() -> new FrmConsultas(principal, 5)));
 
         botoes.add(btnConsultar);
         botoes.add(btnInserir);
@@ -88,13 +92,22 @@ public class FrmReserva extends JFrame {
         carregarCombos();
     }
 
+    public void carregarPorId(int id) {
+        txtId.setText(String.valueOf(id));
+        consultar();
+    }
+
     private void carregarCombos() {
         try {
-            cbLeitor.removeAllItems();
-            for (Leitor l : leitorDAO.listar()) cbLeitor.addItem(l);
+            cbSolicitante.removeAllItems();
+            for (Leitor l : leitorDAO.listar()) cbSolicitante.addItem(l);
+            for (Funcionario f : funcDAO.listar()) cbSolicitante.addItem(f);
 
             cbObra.removeAllItems();
             for (Obra o : obraDAO.listar()) cbObra.addItem(o);
+
+            cbSolicitante.setSelectedIndex(-1);
+            cbObra.setSelectedIndex(-1);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Erro ao carregar listas: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
@@ -102,10 +115,10 @@ public class FrmReserva extends JFrame {
 
     private void inserir() {
         try {
-            Leitor l = (Leitor) cbLeitor.getSelectedItem();
+            Pessoa p = (Pessoa) cbSolicitante.getSelectedItem();
             Obra o = (Obra) cbObra.getSelectedItem();
             LocalDate dt = LocalDate.parse(txtDataReserva.getText().trim());
-            Reserva r = new Reserva(null, l, o, dt, chkAtiva.isSelected());
+            Reserva r = new Reserva(null, p, o, dt, chkAtiva.isSelected());
             if (dao.inserir(r) > 0) {
                 JOptionPane.showMessageDialog(this, "Reserva registrada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
                 limpar();
@@ -129,8 +142,11 @@ public class FrmReserva extends JFrame {
                 JOptionPane.showMessageDialog(this, "Reserva não encontrada.", "Consulta", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            for (int i = 0; i < cbLeitor.getItemCount(); i++) {
-                if (cbLeitor.getItemAt(i).getId().equals(r.getLeitor().getId())) cbLeitor.setSelectedIndex(i);
+            for (int i = 0; i < cbSolicitante.getItemCount(); i++) {
+                Pessoa p = cbSolicitante.getItemAt(i);
+                if (p.getId().equals(r.getSolicitante().getId()) && p.getClass().equals(r.getSolicitante().getClass())) {
+                    cbSolicitante.setSelectedIndex(i);
+                }
             }
             for (int i = 0; i < cbObra.getItemCount(); i++) {
                 if (cbObra.getItemAt(i).getId().equals(r.getObra().getId())) cbObra.setSelectedIndex(i);
@@ -151,10 +167,10 @@ public class FrmReserva extends JFrame {
                 return;
             }
             int id = Integer.parseInt(txtId.getText().trim());
-            Leitor l = (Leitor) cbLeitor.getSelectedItem();
+            Pessoa p = (Pessoa) cbSolicitante.getSelectedItem();
             Obra o = (Obra) cbObra.getSelectedItem();
             LocalDate dt = LocalDate.parse(txtDataReserva.getText().trim());
-            Reserva r = new Reserva(id, l, o, dt, chkAtiva.isSelected());
+            Reserva r = new Reserva(id, p, o, dt, chkAtiva.isSelected());
             if (dao.alterar(r) > 0) {
                 JOptionPane.showMessageDialog(this, "Reserva alterada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             } else {
@@ -197,5 +213,7 @@ public class FrmReserva extends JFrame {
         txtDataReserva.setText(LocalDate.now().toString());
         chkAtiva.setSelected(true);
         txtId.requestFocus();
+        cbSolicitante.setSelectedIndex(-1);
+        cbObra.setSelectedIndex(-1);
     }
 }
